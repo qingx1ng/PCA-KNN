@@ -2,7 +2,7 @@ import argparse
 from utils.data_loader import load_orl_dataset, preprocess_data
 from models.base_model import PCA_KNN_Model
 from utils.evaluator import save_metrics, plot_confusion_matrix
-from utils.visualizer import visualize_eigenfaces
+from utils.visualizer import visualize_eigenfaces, plot_reconstruction, plot_pca_variance, plot_pca_scatter, plot_knn_k_selection
 from config.settings import Config
 
 def main():
@@ -25,16 +25,20 @@ def main():
     # 评估模型
     metrics = model.evaluate(X_test, y_test)
     print(f"Accuracy: {metrics['accuracy']:.4f}")
-    # print("\nClassification Report:")
-    # print(metrics['report'])
+    print("\nClassification Report:")
+    print(metrics['report'])
     
     # 保存结果
     save_metrics(metrics)
     plot_confusion_matrix(y_test, model.predict(X_test))
-    
+
     # 可视化
     visualize_eigenfaces(model.pca)
-    
+    plot_pca_variance(X_train, threshold=0.95)
+    plot_pca_scatter(X_train, y_train, n_components=2)
+    X_pca = model.pca.fit_transform(X_train)
+    plot_knn_k_selection(X_pca, y_train, k_range=range(1, 15))
+
     # 保存模型
     model.save_model("results/baseline_model.pkl")
 
